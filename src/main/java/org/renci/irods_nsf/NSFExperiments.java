@@ -185,6 +185,7 @@ public class NSFExperiments {
             long childInodeNumber = resolvePath(child);
             return toFh(childInodeNumber);
             */
+            return null;
         }
 
         public Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException {
