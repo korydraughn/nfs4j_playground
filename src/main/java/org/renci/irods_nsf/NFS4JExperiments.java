@@ -2,12 +2,10 @@ package org.renci.irods_nsf;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributeView;
@@ -42,12 +40,15 @@ import org.dcache.oncrpc4j.rpc.OncRpcSvcBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.primitives.Longs;
 
-public class NSFExperiments
+public class NFS4JExperiments
 {
+    private static final Logger log_ = LoggerFactory.getLogger(NFS4JExperiments.class);
+
     public static void main(String[] args) throws IOException
     {
         if (args.length != 1)
@@ -80,18 +81,24 @@ public class NSFExperiments
 
         nfsSvc.start();
 
-        System.out.println("press [enter] to stop the server.");
+        log_.info("press [enter] to stop the server.");
         System.in.read();
 
-        System.out.println("shutting down ...");
+        log_.info("shutting down ...");
         nfsSvc.stop();
         
-        System.out.println("shutdown complete.");
+        log_.info("shutdown complete.");
     }
 
     private static final class MyVFS implements VirtualFileSystem
     {
         private static final Logger log_ = LoggerFactory.getLogger(MyVFS.class);
+        private static final ObjectMapper mapper_ = new ObjectMapper();
+        
+        static
+        {
+            mapper_.enable(SerializationFeature.INDENT_OUTPUT);
+        }
 
         private final Path root_;
         private final Map<Long, Path> inodeToPath_ = new ConcurrentHashMap<>();
@@ -109,129 +116,133 @@ public class NSFExperiments
             // Afterwards, any new directories and files that are
             // encountered will be mapped into the VFS system.
             
-            Files.walkFileTree(root_, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path _dir, BasicFileAttributes _attrs) throws IOException
-                {
-                    if (root_.equals(_dir))
-                        return FileVisitResult.CONTINUE;
-
-                    if (!inodeToPath_.containsValue(_dir))
-                        map(fileId_.incrementAndGet(), _dir);
-
-                    return FileVisitResult.SKIP_SUBTREE;
-                }
-                
-                @Override
-                public FileVisitResult visitFile(Path _file, BasicFileAttributes _attrs) throws IOException
-                {
-                    if (!inodeToPath_.containsValue(_file))
-                        map(fileId_.incrementAndGet(), _file);
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+            // Files.newDirectoryString would be more appropriate
+            // since we only want the contents of the root directory.
             
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+            // It turns out that doing this is really unnecessary.
+            // The list member function will always map new files and
+            // directories as they are encountered.
 
-            System.out.println("inode-path map ==> " + mapper.writeValueAsString(inodeToPath_));
+//            Files.walkFileTree(root_, new SimpleFileVisitor<Path>() {
+//                @Override
+//                public FileVisitResult preVisitDirectory(Path _dir, BasicFileAttributes _attrs) throws IOException
+//                {
+//                    if (root_.equals(_dir))
+//                        return FileVisitResult.CONTINUE;
+//
+//                    if (!inodeToPath_.containsValue(_dir))
+//                        map(fileId_.incrementAndGet(), _dir);
+//
+//                    return FileVisitResult.SKIP_SUBTREE;
+//                }
+//                
+//                @Override
+//                public FileVisitResult visitFile(Path _file, BasicFileAttributes _attrs) throws IOException
+//                {
+//                    if (!inodeToPath_.containsValue(_file))
+//                        map(fileId_.incrementAndGet(), _file);
+//
+//                    return FileVisitResult.CONTINUE;
+//                }
+//            });
+
+            log_.debug("inode-path map ==> " + toJSON(inodeToPath_));
         }
 
         @Override
         public int access(Inode inode, int mode) throws IOException
         {
-            System.out.println("vfs::access");
+            log_.debug("vfs::access");
             return mode;
         }
 
         @Override
         public void commit(Inode inode, long offset, int count) throws IOException
         {
-            System.out.println("vfs::commit");
+            log_.debug("vfs::commit");
         }
 
         @Override
         public Inode create(Inode parent, Type type, String name, Subject subject, int mode) throws IOException
         {
-            System.out.println("vfs::create");
+            log_.debug("vfs::create");
             return null;
         }
 
         @Override
         public byte[] directoryVerifier(Inode inode) throws IOException
         {
-            System.out.println("vfs::directoryVerifier");
+            log_.debug("vfs::directoryVerifier");
             return null;
         }
 
         @Override
         public nfsace4[] getAcl(Inode inode) throws IOException
         {
-            System.out.println("vfs::getAcl");
+            log_.debug("vfs::getAcl");
             return new nfsace4[0];
         }
 
         @Override
         public AclCheckable getAclCheckable()
         {
-            System.out.println("vfs::getAclCheckable");
+            log_.debug("vfs::getAclCheckable");
             return null;
         }
 
         @Override
         public FsStat getFsStat() throws IOException
         {
-            System.out.println("vfs::getFsStat");
+            log_.debug("vfs::getFsStat");
             return null;
         }
 
         @Override
         public NfsIdMapping getIdMapper()
         {
-            System.out.println("vfs::getIdMapper");
+            log_.debug("vfs::getIdMapper");
             return idMapper_;
         }
 
         @Override
         public Inode getRootInode() throws IOException
         {
-            System.out.println("vfs::getRootInode");
+            log_.debug("vfs::getRootInode");
             return toFh(1);
         }
 
         @Override
         public Stat getattr(Inode inode) throws IOException
         {
-            System.out.println("vfs::getattr");
+            log_.debug("vfs::getattr");
             long inodeNumber = getInodeNumber(inode);
             Path path = resolveInode(inodeNumber);
-            System.out.println("\tinode-path = " + inodeNumber + "-" + path);
+            log_.debug("inode-path = " + inodeNumber + "-" + path);
             return statPath(path, inodeNumber);
         }
 
         @Override
         public boolean hasIOLayout(Inode inode) throws IOException
         {
-            System.out.println("vfs::hasIOLayout");
+            log_.debug("vfs::hasIOLayout");
             return false;
         }
 
         @Override
         public Inode link(Inode parent, Inode link, String name, Subject subject) throws IOException
         {
-            System.out.println("vfs::link");
+            log_.debug("vfs::link");
             return null;
         }
 
         @Override
         public DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException
         {
-            System.out.println("vfs::list");
-            System.out.println("inode = " + getInodeNumber(inode));
+            log_.debug("vfs::list");
+            log_.debug("inode = " + getInodeNumber(inode));
             
             Path path = resolveInode(getInodeNumber(inode));
-            System.out.println("path  = " + path);
+            log_.debug("path  = " + path);
             
             final List<DirectoryEntry> list = new ArrayList<>();
             
@@ -268,7 +279,7 @@ public class NSFExperiments
         @Override
         public Inode lookup(Inode parent, String name) throws IOException
         {
-            System.out.println("vfs::lookup");
+            log_.debug("vfs::lookup");
             
             Path parentPath = resolveInode(getInodeNumber(parent));
             Path filePath = parentPath.resolve(name);
@@ -279,60 +290,60 @@ public class NSFExperiments
         @Override
         public Inode mkdir(Inode parent, String name, Subject subject, int mode) throws IOException
         {
-            System.out.println("vfs::mkdir");
+            log_.debug("vfs::mkdir");
             return null;
         }
 
         @Override
         public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException
         {
-            System.out.println("vfs::move");
+            log_.debug("vfs::move");
             return false;
         }
 
         @Override
         public Inode parentOf(Inode inode) throws IOException
         {
-            System.out.println("vfs::parentOf");
+            log_.debug("vfs::parentOf");
             return null;
         }
 
         @Override
         public int read(Inode inode, byte[] data, long offset, int count) throws IOException
         {
-            System.out.println("vfs::read");
+            log_.debug("vfs::read");
             return 0;
         }
 
         @Override
         public String readlink(Inode inode) throws IOException
         {
-            System.out.println("vfs::readlink");
+            log_.debug("vfs::readlink");
             return null;
         }
 
         @Override
         public void remove(Inode parent, String name) throws IOException
         {
-            System.out.println("vfs::remove");
+            log_.debug("vfs::remove");
         }
 
         @Override
         public void setAcl(Inode inode, nfsace4[] acl) throws IOException
         {
-            System.out.println("vfs::setAcl");
+            log_.debug("vfs::setAcl");
         }
 
         @Override
         public void setattr(Inode inode, Stat stat) throws IOException
         {
-            System.out.println("vfs::setattr");
+            log_.debug("vfs::setattr");
         }
 
         @Override
         public Inode symlink(Inode parent, String name, String link, Subject subject, int mode) throws IOException
         {
-            System.out.println("vfs::symlink");
+            log_.debug("vfs::symlink");
             return null;
         }
 
@@ -340,7 +351,7 @@ public class NSFExperiments
         public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel)
             throws IOException
         {
-            System.out.println("vfs::write");
+            log_.debug("vfs::write");
             return null;
         }
 
@@ -434,6 +445,11 @@ public class NSFExperiments
             stat.setGeneration(attrs.lastModifiedTime().toMillis());
 
             return stat;
+        }
+        
+        private static String toJSON(Object _object) throws JsonProcessingException
+        {
+            return mapper_.writeValueAsString(_object);
         }
     }
 }
