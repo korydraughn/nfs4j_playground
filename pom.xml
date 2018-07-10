@@ -1,102 +1,102 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
   		 					 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.renci</groupId>
-  <artifactId>irods_nsf</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<groupId>org.renci</groupId>
+	<artifactId>irods_nsf</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-  <name>irods_nsf</name>
-  <url>http://maven.apache.org</url>
+	<name>irods_nsf</name>
+	<url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-  </properties>
-  
-  <build>
-  	<plugins>
-  		<plugin>
-  			<artifactId>maven-assembly-plugin</artifactId>
-  			<configuration>
-  				<archive>
-  					<manifest>
-  						<mainClass>org.renci.irods_nsf.NSFExperiments</mainClass>
-  					</manifest>
-  				</archive>
-  				<descriptorRefs>
-  					<descriptorRef>jar-with-dependencies</descriptorRef>
-  				</descriptorRefs>
-  			</configuration>
-  			
-  			<executions>
-  				<execution>
-  					<id>make-assembly</id>
-  					<phase>package</phase>
-  					<goals>
-  					        <goal>single</goal>
-  					</goals>
-  				</execution>
-  			</executions>
-  		</plugin>
-  	</plugins>
-  </build>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.renci.irods_nfs.NFS4JExperiments</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.8.0-beta2</version>
-    </dependency>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-    </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
 
-    <dependency>
-      <groupId>org.dcache</groupId>
-      <artifactId>nfs4j-core</artifactId>
-      <version>0.17.2</version>
-    </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.8.0-beta2</version>
+		</dependency>
 
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.9.6</version>
-    </dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
 
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.9.6</version>
-    </dependency>
+		<dependency>
+			<groupId>org.dcache</groupId>
+			<artifactId>nfs4j-core</artifactId>
+			<version>0.17.2</version>
+		</dependency>
 
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>2.9.6</version>
-    </dependency>
-  </dependencies>
-  
-  <repositories>
-    <repository>
-      <id>dcache-releases</id>
-      <name>dCache.ORG maven repository</name>
-      <url>https://download.dcache.org/nexus/content/repositories/releases</url>
-      <layout>default</layout>
-    </repository>
-  </repositories>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.9.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.9.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.9.6</version>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>dcache-releases</id>
+			<name>dCache.ORG maven repository</name>
+			<url>https://download.dcache.org/nexus/content/repositories/releases</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
 </project>

@@ -1,4 +1,4 @@
-package org.renci.irods_nsf;
+package org.renci.irods_nfs;
 
 import java.io.File;
 import java.io.IOException;
